@@ -1,0 +1,162 @@
+'''
+Purpose: (What does an object of this class represent?)
+Instance variables: (What are the instance variables for this class,
+and what does each represent in a few words?)
+Methods: (What methods does this class have, and what does each do in a few words?)
+'''
+import random
+class Character:
+    '''
+    Purpose: (What does an object of this class represent?) base class for all the specialization classes to build off of
+    Instance variables: (What are the instance variables for this class,
+    and what does each represent in a few words?) name is the name of the Character
+    alive is whether or not the character is alive still
+    role is what role the character has, whether it is good or bad
+    task_list is the list of tasks that the character has
+    Methods: (What methods does this class have, and what does each do in a few words?)
+    __repr__ changes what is outputted when class is called.  not jibberish
+    get_identity tells what type of character it is.  standard set to character
+    '''
+
+
+
+    def __init__(self, name, color, num_task):
+        possible_tasks = ['Stabilize drill', 'Calibrate distributor',
+    'Map course', 'Clear out O2 filter', 'Download files',
+    'Redirect power', 'Empty garbage', 'Repair wiring',
+    'Fill engines tanks', 'Inspect laboratory', 'Record temperature',
+    'Sign in with ID', 'Enable manifolds', 'Upload files']
+        self.name=name
+        self.color=color
+        self.alive=True
+        self.role='Good'
+        self.task_list=[]
+        i=0
+        #keeps randomly chooseing a task and adding it to the list until the list is the desired length
+        while i<num_task:
+            #randomgly chooses a task from the possible task list
+            random_num=random.randint(0,len(possible_tasks)-1)
+            choice=possible_tasks[random_num]
+
+            #if the randonly choosen task has not already been choosen
+            if choice not in self.task_list:
+                self.task_list.append(choice)
+                i+=1
+    def __repr__(self):
+        if self.alive==True:
+            response= self.name+': '+self.color+' - Health Status: Alive'
+            return response
+        else:
+            return self.name+': '+self.color+' - Health Status: Ghost'
+    def get_identity(self):
+        return 'Character'
+
+
+class Crewperson(Character):
+    '''
+    Purpose: (What does an object of this class represent?) if the character is a crewperson
+    Instance variables: (What are the instance variables for this class,
+    and what does each represent in a few words?)
+    there is self.tasl_list and self.name that are taken from the base class
+    Methods: (What methods does this class have, and what does each do in a few words?)
+    get_identity is changed to crewperson to show the character is a Crewperson
+    complete_task shows that the character has either completed a task or all of their tasks
+    '''
+    def get_identity(self):
+        return 'Crewperson'
+    def complete_task(self):
+        if len(self.task_list)==0:
+            print(self.name+' has completed all their tasks.')
+        else:
+            complete= self.task_list.pop(0)
+            print(self.name+" has completed task: "+complete)
+
+
+
+class Pretender(Character):
+    '''
+    Purpose: (What does an object of this class represent?) if the character is a pretender
+    Instance variables: (What are the instance variables for this class,
+    and what does each represent in a few words?)
+    the base variables and then self.role is changed from good to evil
+    Methods: (What methods does this class have, and what does each do in a few words?)
+    get_identity is showing the charcter is a Pretender
+    eliminate is changing the alive staus to false of a crewperson that the character attacked
+    '''
+    def __init__(self, name, color, num_task):
+        super().__init__(name, color, num_task)
+        self.role='Evil'
+    def get_identity(self):
+        return 'Pretender'
+    def eliminate(self, target):
+        target.alive=False
+        print(f"{self.name} eliminated {target.name}")
+
+
+class Sheriff(Crewperson):
+    '''
+    Purpose: (What does an object of this class represent?) if the character is a sheriff
+    Instance variables: (What are the instance variables for this class,
+    and what does each represent in a few words?)
+    same as the base class.  Inherited
+    Methods: (What methods does this class have, and what does each do in a few words?)
+    get_identity is changed to sheriff
+    encounter: if the sheriff encounters a pretender they eliminate them and change their alive status to False
+
+    '''
+    def get_identity(self):
+        return "Sheriff"
+    def encounter(self, target):
+        if target.role=='Evil':
+            target.alive=False
+            print(f"{self.name} eliminated {target.name}")
+
+tasks = [Crewperson('Elijah', 'Teal', 0),
+              Pretender('Lucas', 'Green', 1),
+              Crewperson('Robert', 'Black', 0),
+              Sheriff('Naome', 'Orange', 3)]
+
+class Game:
+
+    '''
+    Purpose: (What does an object of this class represent?) this is the game play class
+    Instance variables: (What are the instance variables for this class,
+    and what does each represent in a few words?)
+    player_list is the list of players and their qualities
+    Methods: (What methods does this class have, and what does each do in a few words?)
+    check_winner checks if there is a winner (either crewperson or pretender) based on the given criteria
+    '''
+
+    def __init__(self, player_list):
+        self.player_list=player_list
+    def check_winner(self):
+        alive_pretender=0
+        alive_crew=0
+        tasks_complete=True
+        crew_dead=False
+        for character in self.player_list:
+            identity=character.get_identity()
+            if identity=="Pretender":
+                if character.alive==True:
+                    alive_pretender+=1
+
+                else:
+                    crew_dead=True
+            else:
+                if identity == 'Crewperson':
+
+                    if character.alive==True:
+                        alive_crew+=1
+
+                    if len(character.task_list)!=0:
+                        tasks_complete=False
+
+
+        if (crew_dead==False and tasks_complete==True) or alive_pretender==0:
+                print("Crewpersons win!")
+                return 'C'
+        elif alive_pretender>=alive_crew:
+            print("Pretenders win!")
+            return 'P'
+        else:
+            return '-'
